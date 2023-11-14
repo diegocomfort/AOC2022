@@ -31,7 +31,7 @@ int main(void)
 
     char buff[SIZE];
     long i = 0;
-    Directory *root = createDirectory();
+    Directory *root = NULL; //createDirectory();
     Directory *currentDirectory = root;
 
     for (; i < SIZE; ++i)
@@ -49,6 +49,8 @@ int main(void)
         else break;
     }
     
+    fclose(input);
+
     printf("Size of stdin: %lu\n", SIZE);
 
     return 0;
