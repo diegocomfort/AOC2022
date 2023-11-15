@@ -3,8 +3,8 @@ FLAGS = -Weverything
 
 all: main
 
-main: main.c
-	$(CC) $(FLAGS) -o $@ $^
+main: main.c day7.h
+	$(CC) $(FLAGS) -o $@ $<
 
 run:
 	./main

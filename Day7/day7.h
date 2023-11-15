@@ -39,22 +39,25 @@ Directory *createDirectory(char *directoryName)
 // Used to free root, then all child directories
 void recursivelyFreeDirectory(Directory *directory)
 {
+    if (directory == NULL)
+        return;
+
     free(directory->name);
     if (directory->fileSizes)
         free(directory->fileSizes);
     if (directory->subDirectories)
-        for (int i = 0; i < directory->subDirectoryCount; ++i)
-            recursivelyFreeDirectory(&directory->subDirectories[i]);
+        for (size_t i = 0; i < directory->subDirectoryCount; ++i)
+            recursivelyFreeDirectory(directory->subDirectories[i]);
     free(directory);
 }
 
 // Create a string from another
 char *substring(char *start, char *end)
 {
-    char *string = malloc((end - start + 1) * sizeof(char));
+    char *string = malloc((size_t)(end - start + 1) * sizeof(char));
     if (string == NULL)
         return NULL;
-    memcpy(string, start, end - start);
+    memcpy(string, start, (size_t)(end - start));
     string[end - start] = 0;
     return string;
 }
@@ -80,5 +83,29 @@ bool appendDirectory(Directory *parent, Directory *child)
 // Add a file (size) to a directory
 bool appendFile(Directory *parent, size_t fileSize)
 {
-    // TODO:
+    size_t *tmp;
+    if (parent->fileSizes == NULL)
+        tmp = malloc(sizeof(size_t));
+    else
+        tmp = realloc(parent->fileSizes, (parent->fileCount + 1) * sizeof(size_t*));
+    
+    if (tmp == NULL)
+        return false;
+    
+    parent->fileSizes = tmp;
+    parent->fileSizes[parent->fileCount++] = fileSize;
+    return true;
+}
+
+// Get the size of all the file in a directory and all its subdirectories
+size_t totalSize(Directory *directory)
+{
+    size_t sum = 0;
+    if (directory->fileSizes)
+        for (size_t i = 0; i < directory->fileCount; ++i)
+            sum += directory->fileSizes[i];
+    if (directory->subDirectories)
+        for (size_t i = 0; i < directory->subDirectoryCount; ++i)
+            sum += totalSize(directory->subDirectories[i]);
+    return sum;        
 }
