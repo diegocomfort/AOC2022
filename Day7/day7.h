@@ -21,7 +21,7 @@ size_t totalSize(Directory *directory);
 char *substring(char *start, char *end);
 
 
-
+// Create a new directory
 Directory *createDirectory(char *directoryName)
 {
     Directory *directory = malloc(sizeof(Directory));
@@ -36,6 +36,7 @@ Directory *createDirectory(char *directoryName)
     return directory;
 }
 
+// Used to free root, then all child directories
 void recursivelyFreeDirectory(Directory *directory)
 {
     free(directory->name);
@@ -47,6 +48,7 @@ void recursivelyFreeDirectory(Directory *directory)
     free(directory);
 }
 
+// Create a string from another
 char *substring(char *start, char *end)
 {
     char *string = malloc((end - start + 1) * sizeof(char));
@@ -57,19 +59,26 @@ char *substring(char *start, char *end)
     return string;
 }
 
+// Add a directory inside another
 bool appendDirectory(Directory *parent, Directory *child)
 {
+    Directory **tmp;
     if (parent->subDirectories == NULL)
-    {
-        Directory *tmp = malloc(sizeof(Directory*));
-        if (tmp == NULL)
-            return false;
-        parent->subDirectories = tmp;
-        parent->subDirectoryCount = 1;
-        parent->subDirectories[0] = child;
-    }
+        tmp = malloc(sizeof(Directory*));
     else
-    {
-        
-    }
+        tmp = realloc(parent->subDirectories, (parent->subDirectoryCount + 1) * sizeof(Directory*));
+
+    if (tmp == NULL)
+        return false;
+
+    child->parentDirectory = parent;
+    parent->subDirectories = tmp;
+    parent->subDirectories[parent->subDirectoryCount++] = child;
+    return true;
+}
+
+// Add a file (size) to a directory
+bool appendFile(Directory *parent, size_t fileSize)
+{
+    // TODO:
 }

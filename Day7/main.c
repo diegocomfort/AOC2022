@@ -5,7 +5,7 @@
 #include "day7.h"
 
 #define BUFF_SIZE 256
-#define INPUT_PATH "input.txt"
+#define INPUT_PATH "test.txt"
 
 
 int main(void)
@@ -20,40 +20,35 @@ int main(void)
     rewind(input);
 
     char buff[SIZE];
-    long i = 0;
+    fread(buff, sizeof(buff), SIZE, input);
+    fclose(input);
 
+    Directory *currentDirectory = NULL;
 
-    // Create root directory
-    char *rootStr = malloc(2 * sizeof(char));
-    if (rootStr == NULL) return 2;
-    rootStr[0] = '/';
-    rootStr[1] = 0;
-    Directory *root = createDirectory(rootStr);
-    if (root == NULL)
-    {
-        free(rootStr); 
-        return 3;
-    }
-    
-    Directory *currentDirectory = root;
-
-    for (; i < SIZE; ++i)
+    // Read input
+    for (long i = 0; i < SIZE; ++i)
     {
         while (buff[i] != '$') ++i;
         ++i;    // skip space between '$' and the command
         if (buff[i] == 'c') // cd
         {
-
+            i += 3; // goto start of directory name
+            // TODO:
         }
         else if (buff[i] == 'l') // ls
         {
-
+            i += 3; // goto start of file size
+            // TODO:
         }
-        else break;
+        else continue;
     }
-    
-    fclose(input);
 
+
+    // goto root (/)
+    while (currentDirectory && currentDirectory->parentDirectory)
+        currentDirectory = currentDirectory->parentDirectory;
+    recursivelyFreeDirectory(currentDirectory);
+    
     printf("Size of stdin: %lu\n", SIZE);
 
     return 0;
