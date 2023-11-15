@@ -1,22 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
+#include "day7.h"
 
 #define BUFF_SIZE 256
 #define INPUT_PATH "input.txt"
 
-typedef struct Directory
-{
-    struct Directory *parent;
-    struct Directory *subDirectories;
-    size_t *fileSizes;
-    size_t subDirectoryCount, fileCount;
-}
-Directory;
-
-Directory *createDirectory();
-void appendDirectory(Directory *parent, Directory *child);
-void appendFile(Directory *parent, size_t fileSize);
-size_t totalSize(Directory *directory);
 
 int main(void)
 {
@@ -31,7 +21,20 @@ int main(void)
 
     char buff[SIZE];
     long i = 0;
-    Directory *root = NULL; //createDirectory();
+
+
+    // Create root directory
+    char *rootStr = malloc(2 * sizeof(char));
+    if (rootStr == NULL) return 2;
+    rootStr[0] = '/';
+    rootStr[1] = 0;
+    Directory *root = createDirectory(rootStr);
+    if (root == NULL)
+    {
+        free(rootStr); 
+        return 3;
+    }
+    
     Directory *currentDirectory = root;
 
     for (; i < SIZE; ++i)
