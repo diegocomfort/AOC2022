@@ -8,50 +8,98 @@
 
 int main(void)
 {
-    printf(INPUT_PATH"\n");
-    
     FILE *input = fopen(INPUT_PATH, "r");
     if (input == NULL)
         return 1;
 
     // Get size of file 
     fseek(input, 0L, SEEK_END);
-    const long SIZE = ftell(input) + 1;
+    const size_t fileSize = (size_t) ftell(input);
     rewind(input);
-    printf("Read size of "INPUT_PATH": %li\n", SIZE);
 
-    char *buff = malloc((size_t) SIZE * sizeof(char));
-    fread(buff, sizeof(buff), (size_t) SIZE, input);
+    printf("Size of file: %lu\n", fileSize);
+
+    char *buff = malloc(fileSize * sizeof(char));
+    if (buff == NULL)
+        return 2;
+    fread(buff, sizeof(char), (size_t) fileSize, input);
     fclose(input);
-    printf("Read "INPUT_PATH" into a buffer\n");
 
-    // Directory *currentDirectory = NULL;
+    char *rootString = malloc(2UL);
+    rootString[0] = '/';
+    rootString[1] = 0;
+
+    Directory *root = createDirectory(rootString);
+    Directory *currentDirectory = root;
+    printDirectory(currentDirectory);
 
     // Read input
-    for (long i = 0; i < SIZE; ++i)
+    for (char *currentChar = buff; 
+         currentChar < buff + fileSize; 
+         ++currentChar)
     {
-        putchar(buff[i]);
-        // while (buff[i] != '$') ++i;
-        // ++i;    // skip space between '$' and the command
-        // if (buff[i] == 'c') // cd
-        // {
-        //     i += 3; // goto start of directory name
-        //     // TODO:
-        // }
-        // else if (buff[i] == 'l') // ls
-        // {
-        //     i += 3; // goto start of file size
-        //     // TODO:
-        // }
-        // else continue;
+        // Goto next '$' (start of command)
+        while (currentChar < buff + fileSize && 
+               *currentChar != '$') ++currentChar;
+        if (currentChar >= buff + fileSize - 1) break;
+        
+        currentChar += 2; // skip space between '$' and the command
+
+        // cd command
+        if (*currentChar == 'c')
+        {
+            // goto start of directory name
+            currentChar += 3;
+            // Get directory name
+            char *endOfDirName = currentChar;
+            while (!isspace(*(endOfDirName + 1)))
+                ++endOfDirName;
+
+            char *directoryName = substring(currentChar, endOfDirName);
+            if (directoryName == NULL)
+            {
+                recursivelyFreeDirectory(root);
+                return -1;
+            }
+
+            // Go to root
+            if (directoryName[0] == '/')
+            {
+                currentDirectory = root;
+                free(directoryName);
+            }
+            // Go to ../ (parent directory)
+            else if (directoryName[0] == '.' && directoryName[1] == '.')
+            {
+                if (currentDirectory->parentDirectory)
+                    currentDirectory = currentDirectory->parentDirectory;
+                free(directoryName);
+            }
+            // Create new directory
+            else 
+            {
+                Directory *directory = createDirectory(directoryName);
+                appendDirectory(currentDirectory, directory);
+                currentDirectory = directory;
+            }
+
+            //printDirectory(currentDirectory);
+            
+        }
+        // ls command
+        else if (*currentChar == 'l')
+        {
+            currentChar += 3; // goto start of file size
+            char *endOfFileSize = currentChar;
+        }
+        else continue;
     }
+
+    printDirectory(root);
+    printDirectory(root->subDirectories[0]);
+
     free(buff);
-
-
-    // goto root (/)
-    // while (currentDirectory && currentDirectory->parentDirectory)
-    //     currentDirectory = currentDirectory->parentDirectory;
-    // recursivelyFreeDirectory(currentDirectory);
+    recursivelyFreeDirectory(root);
     
     return 0;
 }

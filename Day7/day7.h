@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 typedef struct Directory
 {
@@ -19,7 +20,7 @@ bool appendDirectory(Directory *parent, Directory *child);
 bool appendFile(Directory *parent, size_t fileSize);
 size_t totalSize(Directory *directory);
 char *substring(char *start, char *end);
-
+void printDirectory(Directory *directory);
 
 // Create a new directory
 Directory *createDirectory(char *directoryName)
@@ -48,17 +49,24 @@ void recursivelyFreeDirectory(Directory *directory)
     if (directory->subDirectories)
         for (size_t i = 0; i < directory->subDirectoryCount; ++i)
             recursivelyFreeDirectory(directory->subDirectories[i]);
+    free(directory->subDirectories);
     free(directory);
 }
 
-// Create a string from another
+// Create a string from another {start} through {end} (inclusive)
 char *substring(char *start, char *end)
 {
-    char *string = malloc((size_t)(end - start + 1) * sizeof(char));
+    const size_t length = (size_t) (end - start) + 2UL;
+
+    char *string = malloc(length * sizeof(char));
     if (string == NULL)
         return NULL;
-    memcpy(string, start, (size_t)(end - start));
-    string[end - start] = 0;
+    memcpy(string, start, length);
+    string[length - 1] = 0;
+
+    printf("Allocted %lu bytes of memory for string \"%s\" at %p\n", 
+            length, string, (void*) string);
+
     return string;
 }
 
@@ -107,5 +115,28 @@ size_t totalSize(Directory *directory)
     if (directory->subDirectories)
         for (size_t i = 0; i < directory->subDirectoryCount; ++i)
             sum += totalSize(directory->subDirectories[i]);
-    return sum;        
+    return sum;    
+}
+
+// Print a directory
+void printDirectory(Directory *directory)
+{
+    printf("Name: %s\n", directory->name);
+
+    if (directory->subDirectories)
+    {
+        printf("Directories: ");
+        for (size_t i = 0; i < directory->subDirectoryCount; ++i)
+            printf("%s ", directory->subDirectories[i]->name);
+        printf("\n");
+    }
+
+    if (directory->fileSizes)
+    {    printf("Files:");
+        for (size_t i = 0; i < directory->fileCount; ++i)
+            printf("%lu \n", directory->fileSizes[i]);
+        printf("\n");
+    }
+
+    printf("\n");
 }
