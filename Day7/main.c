@@ -4,9 +4,17 @@
 
 #include "day7.h"
 
-#define INPUT_PATH "test.txt"
+#define INPUT_PATH "input.txt"
+#define MAXIMUM_DIRECOTRY_SIZE 100000UL
+
+int partOne(void);
 
 int main(void)
+{
+    return partOne();
+}
+
+int partOne(void)
 {
     FILE *input = fopen(INPUT_PATH, "r");
     if (input == NULL)
@@ -16,9 +24,7 @@ int main(void)
     fseek(input, 0L, SEEK_END);
     const size_t fileSize = (size_t) ftell(input);
     rewind(input);
-
-    printf("Size of file: %lu\n", fileSize);
-
+    
     char *buff = malloc(fileSize * sizeof(char));
     if (buff == NULL)
         return 2;
@@ -31,12 +37,11 @@ int main(void)
 
     Directory *root = createDirectory(rootString);
     Directory *currentDirectory = root;
-    printDirectory(currentDirectory);
+    size_t directoryCount = 1;
 
     // Read input
-    for (char *currentChar = buff; 
-         currentChar < buff + fileSize; 
-         ++currentChar)
+    char *currentChar = buff;
+    while (currentChar < buff + fileSize)
     {
         // Goto next '$' (start of command)
         while (currentChar < buff + fileSize && 
@@ -54,7 +59,6 @@ int main(void)
             char *endOfDirName = currentChar;
             while (!isspace(*(endOfDirName + 1)))
                 ++endOfDirName;
-
             char *directoryName = substring(currentChar, endOfDirName);
             if (directoryName == NULL)
             {
@@ -75,31 +79,78 @@ int main(void)
                     currentDirectory = currentDirectory->parentDirectory;
                 free(directoryName);
             }
-            // Create new directory
+            // Move to named directory
             else 
             {
+                // Check if it already exists
+                if (currentDirectory->subDirectories)
+                    for (size_t i = 0; 
+                        i < currentDirectory->subDirectoryCount;
+                        ++i)
+                    {
+                        if (strcmp(directoryName, currentDirectory->subDirectories[i]->name) == 0)
+                        {
+                            free(directoryName);
+                            currentDirectory = currentDirectory->subDirectories[i];
+                            goto increment;
+                        }
+                    }
+
+                // Create a new directory
                 Directory *directory = createDirectory(directoryName);
                 appendDirectory(currentDirectory, directory);
                 currentDirectory = directory;
-            }
+                ++directoryCount;
+            } 
 
-            //printDirectory(currentDirectory);
-            
+            increment:
+            ++currentChar;       
         }
         // ls command
         else if (*currentChar == 'l')
         {
             currentChar += 3; // goto start of file size
-            char *endOfFileSize = currentChar;
+
+            do
+            {
+                // Get fize size
+                char *endOfFileSize = currentChar;
+                while (!isspace(*(endOfFileSize + 1)))
+                    ++endOfFileSize;
+                char *sizeString = substring(currentChar, endOfFileSize);
+                size_t size = (size_t) atol(sizeString);
+                free(sizeString);
+
+                appendFile(currentDirectory, size);
+
+                currentChar = endOfFileSize;
+                while (*currentChar++ != '\n'); // seek start of next line
+            }
+            while (currentChar < buff + fileSize &&
+                   *currentChar != '$');
         }
-        else continue;
+        else break; // something's wrong
     }
 
-    printDirectory(root);
-    printDirectory(root->subDirectories[0]);
+    // Count th total sizes of each directory
+    size_t *directorySizes = malloc(directoryCount * sizeof(size_t));
+    if (directorySizes == NULL)
+    {
+        free(buff);
+        recursivelyFreeDirectory(root);
+        return -2;
+    }
+    size_t directoriesIndexed = 0;
+    getAllDirectorySizes(root, directorySizes, directoryCount, &directoriesIndexed);
+    size_t answer = 0;
+    for (size_t i = 0; i < directoryCount; ++i)
+        if (directorySizes[i] < MAXIMUM_DIRECOTRY_SIZE)
+            answer += directorySizes[i];
 
+    printf("Your answer is: %lu\n", answer);
+
+    free(directorySizes);
     free(buff);
     recursivelyFreeDirectory(root);
-    
     return 0;
 }

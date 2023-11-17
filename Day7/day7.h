@@ -21,6 +21,7 @@ bool appendFile(Directory *parent, size_t fileSize);
 size_t totalSize(Directory *directory);
 char *substring(char *start, char *end);
 void printDirectory(Directory *directory);
+void getAllDirectorySizes(Directory *currentDirectory, size_t *directorySizes, size_t directoryCount, size_t *directoriesIndexed);
 
 // Create a new directory
 Directory *createDirectory(char *directoryName)
@@ -53,7 +54,8 @@ void recursivelyFreeDirectory(Directory *directory)
     free(directory);
 }
 
-// Create a string from another {start} through {end} (inclusive)
+// Create a string from another `start` through `end` (inclusive)
+// Must be `free`d by user
 char *substring(char *start, char *end)
 {
     const size_t length = (size_t) (end - start) + 2UL;
@@ -63,9 +65,6 @@ char *substring(char *start, char *end)
         return NULL;
     memcpy(string, start, length);
     string[length - 1] = 0;
-
-    printf("Allocted %lu bytes of memory for string \"%s\" at %p\n", 
-            length, string, (void*) string);
 
     return string;
 }
@@ -139,4 +138,28 @@ void printDirectory(Directory *directory)
     }
 
     printf("\n");
+}
+
+// Put all the sizes of all the directories into `directorySizes`
+void getAllDirectorySizes
+(
+    Directory *currentDirectory, 
+    size_t *directorySizes, 
+    size_t directoryCount, 
+    size_t *directoriesIndexed
+)
+{
+    directorySizes[(*directoriesIndexed)++] = totalSize(currentDirectory);
+    if (*directoriesIndexed > directoryCount - 1)
+        return;
+    for (size_t i = 0; i < currentDirectory->subDirectoryCount; ++i)
+    {
+        getAllDirectorySizes
+        (
+            currentDirectory->subDirectories[i],
+            directorySizes,
+            directoryCount,
+            directoriesIndexed
+        );
+    }
 }
