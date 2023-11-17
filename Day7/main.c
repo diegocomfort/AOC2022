@@ -117,16 +117,8 @@ int partOne(void)
             do
             {
                 // Get fize size
-                char *endOfFileSize = currentChar;
-                while (!isspace(*(endOfFileSize + 1)))
-                    ++endOfFileSize;
-                char *sizeString = substring(currentChar, endOfFileSize);
-                size_t size = (size_t) atol(sizeString);
-                free(sizeString);
-
+                size_t size = (size_t) atol(currentChar);
                 appendFile(currentDirectory, size);
-
-                currentChar = endOfFileSize;
                 while (*currentChar++ != '\n'); // seek start of next line
             }
             while (currentChar < buff + fileSize &&
@@ -258,16 +250,8 @@ int partTwo(void)
             do
             {
                 // Get fize size
-                char *endOfFileSize = currentChar;
-                while (!isspace(*(endOfFileSize + 1)))
-                    ++endOfFileSize;
-                char *sizeString = substring(currentChar, endOfFileSize);
-                size_t size = (size_t) atol(sizeString);
-                free(sizeString);
-
+                size_t size = (size_t) atol(currentChar);
                 appendFile(currentDirectory, size);
-
-                currentChar = endOfFileSize;
                 while (*currentChar++ != '\n'); // seek start of next line
             }
             while (currentChar < buff + fileSize &&
