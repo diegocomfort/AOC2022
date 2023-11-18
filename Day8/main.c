@@ -1,5 +1,3 @@
-#include "day8.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -14,7 +12,7 @@ int partTwo(void);
 
 int main(void)
 {
-    return partOne();
+    return partTwo();
 }
 
 int partOne(void)
@@ -116,8 +114,7 @@ int partOne(void)
 int partTwo(void)
 {
     char buff[HEIGHT][WIDTH];
-    bool visible[HEIGHT][WIDTH] = {0};
-    size_t scenicScores[HEIGHT][WIDTH];
+    size_t scenicScores[HEIGHT][WIDTH];        
 
     FILE *input = fopen(INPUT_FILE, "r");
     if (!input) return 1;
@@ -126,21 +123,28 @@ int partTwo(void)
         fread(buff[y], sizeof(char), WIDTH, input);
         fgetc(input); // skip newline
 
+        // Initialize scenicScores
         for (size_t x = 0; x < WIDTH; ++x)
-            scenicScores[y][x] = 1UL;
+        {
+            if (x == 0 || y == 0 || x == WIDTH - 1 || y == HEIGHT - 1)
+                scenicScores[y][x] = 0;
+            else
+                scenicScores[y][x] = 1;
+        }
     }   
-
-    size_t visibleTrees = 2 * (HEIGHT + WIDTH) - 4;
-    printf("Visible trees: %lu\n", visibleTrees);
-    size_t directionalScore;
 
     // Top -> Bottom
     for (size_t x = 1; x < WIDTH - 1; ++x)
     {
-        directionalScore = 1UL;
-        for (size_t y = 1; y < HEIGHT - 1; ++y)
+        for (size_t y = 1; y < (long) HEIGHT - 1; ++y)
         {
-            
+            for (long y2 = (signed) y - 1; y2 >= 0; --y2)
+            {
+                if (buff[y2][x] < buff[y][x] && y2 != 0)
+                    continue;
+                scenicScores[y][x] *= (y - (unsigned) y2);
+                break;
+            }
         }
     }
 
@@ -149,29 +153,49 @@ int partTwo(void)
     {
         for (size_t y = HEIGHT - 2; y > 0; --y)
         {
-            
+            for (long y2 = (signed) y + 1; y2 < (long) WIDTH; ++y2)
+            {
+                if (buff[y][x] > buff[y2][x]  && y2 != WIDTH - 1)
+                    continue;
+                scenicScores[y][x] *= ((unsigned) y2 - y);
+                break;
+            }
         }
     }
 
     // Left -> Right
     for (size_t y = 1; y < HEIGHT - 1; ++y)
     {
-        for (size_t x = 1; x < WIDTH - 1; ++x)
+        for (size_t x = 1; x < (long) WIDTH - 1; ++x)
         {
-            
+            for (long x2 = (signed) x - 1; x2 >= 0; --x2)
+            {
+                if (buff[y][x] > buff[y][x2] && x2 != 0)
+                    continue;
+                scenicScores[y][x] *= (x - (unsigned) x2);
+                break;
+            }
         }
     }
+    
+    size_t maxScenicScore = 0;
 
     // Right -> Left
     for (size_t y = 1; y < HEIGHT - 1; ++y)
     {
         for (size_t x = WIDTH - 2; x > 0; --x)
         {
-            
+            for (long x2 = (signed) x + 1; x2 < (long) WIDTH; ++x2)
+            {
+                if (buff[y][x] > buff[y][x2] && x2 != WIDTH - 1)
+                    continue;
+                scenicScores[y][x] *= ((unsigned) x2 - x);
+                break;
+            }           
+            if (scenicScores[y][x] > maxScenicScore)
+                maxScenicScore = scenicScores[y][x];
         }
     }
-
-    size_t maxScenicScore = 0;
 
     printf("Answer: %lu\n", maxScenicScore);
 

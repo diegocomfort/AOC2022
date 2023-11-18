@@ -3,7 +3,7 @@ FLAGS = -Weverything -ggdb3
 
 all: main
 
-main: main.c day8.h
+main: main.c
 	$(CC) $(FLAGS) -o $@ $<
 
 reset: clean main
