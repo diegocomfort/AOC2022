@@ -12,7 +12,7 @@ run:
 	./main
 
 clean: 
-	rm main valgrind-out.txt
+	rm main 
 
 debug: main
 	valgrind \
