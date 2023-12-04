@@ -1,4 +1,5 @@
-# executable
+# executable/binary
+**/*.o
 **/main
 
 #vscode
