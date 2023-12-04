@@ -6,3 +6,6 @@
 
 # Debug
 **/valgrind-out.txt
+
+# Emacs
+**/*~
