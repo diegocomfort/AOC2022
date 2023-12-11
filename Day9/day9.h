@@ -28,5 +28,7 @@ bool mapHasKey(Map *map, Point key);
 bool mapPut(Map *map, Point key, int value);
 bool mapGet(Map *map, Point key, int *value);
 void freeMap(Map *map);
+void printMapEntries(Map *map);
 
-void moveRope(char direction, Point *head, Point *tail, Map *pointsVisited);
+void moveRope(char direction, int steps, Point *head, Point *tail, Map *pointsVisited);
+void moveBigRope(char direction, int steps, Point knots[10], Map *pointsVisited);

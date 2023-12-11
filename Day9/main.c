@@ -4,14 +4,13 @@
 #include <stdbool.h>
 
 #define LINE_MAX 10
-#define ARRAY_LEN(arr) (sizeof(arr) / sizeof(*arr))
 
 int partOne(void);
 int partTwo(void);
 
 int main(void)
 {
-    return partOne();
+    return partTwo();
 }
 
 int partOne(void)
@@ -27,14 +26,62 @@ int partOne(void)
     Point head = {.x = 0, .y = 0},
 	  tail = {.x = 0, .y = 0};
     Map *pointsVisited = createMap(200);
-    while (fgets(buff, ARRAY_LEN(buff), input))
+    while (fgets(buff, LINE_MAX, input))
     {
 	int direction = *buff,
-	steps = atoi(buff + 2); // number starts at 3rd character
-	
-        // moveRope(direction, &head, &tail, pointsVisited);
+	    steps = atoi(buff + 2); // number starts at 3rd character
+        moveRope(direction, steps, &head, &tail, pointsVisited);
     }
 
+    int count = 0;
+    for (int i = 0; i < pointsVisited->entries; ++i)
+    {
+	for (MapEntry *entry = pointsVisited->entryList[i];
+	     entry; entry = entry->next)
+	{
+	    ++count;
+	}
+    }
+
+    printf("The tail visited %i different tiles\n", count);
+    
+    freeMap(pointsVisited);
+    fclose(input);
+    
+    return 0;
+}
+
+int partTwo(void)
+{
+    FILE *input = fopen("input.txt", "r");
+    if (!input)
+    {
+	fprintf(stderr, "couldn't open input");
+	return 1;
+    }
+
+    char buff[LINE_MAX] = {0};
+    Point knots[10] = {0};
+    Map *pointsVisited = createMap(200);
+    while (fgets(buff, LINE_MAX, input))
+    {
+	int direction = *buff,
+	    steps = atoi(buff + 2); // number starts at 3rd character
+        moveBigRope(direction, steps, knots, pointsVisited);
+    }
+
+    int count = 0;
+    for (int i = 0; i < pointsVisited->entries; ++i)
+    {
+	for (MapEntry *entry = pointsVisited->entryList[i];
+	     entry; entry = entry->next)
+	{
+	    ++count;
+	}
+    }
+
+    printf("The tail visited %i different tiles\n", count);
+    
     freeMap(pointsVisited);
     fclose(input);
     
