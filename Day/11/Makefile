@@ -3,10 +3,10 @@ FLAGS = -Weverything -ggdb3
 
 all: main
 
-main: main.o
-	$(CC) $(FLAGS) $^ -o $@
+main: main.o day11.h
+	$(CC) $(FLAGS) $< -o $@
 
-%.o: %.c
+%.o: %.c day11.h
 	$(CC) -c $< -o $@
 
 reset: clean main run
